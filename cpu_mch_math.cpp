@@ -1,5 +1,19 @@
+/**
+  CPU version of the mathematical functions. This listing should be exactly the 
+  same as the one implemented for the GPU. It has been split for test purpose
+  in the context of bit reproducibility.
+  
+  See gpu_mch_math.cpp for the GPU twin file
+*/
+
+// cout
+#include <iostream>
+// math
+#include "cpu_mch_math.h"
+#include <cmath>
+
 // -------------------------------------------------------------------------
-// HELPER FUNCTION TO MANIPULATE DOUBLES
+// HELPER FUNCTIONS TO MANIPULATE DOUBLES
 // -------------------------------------------------------------------------
 
 union udouble {
@@ -8,7 +22,7 @@ union udouble {
   unsigned long long u;
 };
 
-__host__ __device__ int mch_double2hiint(double d) {
+int cpu_mch_double2hiint(double d) {
   udouble ud;
   ud.d = d;
 
@@ -16,7 +30,7 @@ __host__ __device__ int mch_double2hiint(double d) {
   return (int) high;
 }
 
-__host__ __device__ int mch_double2loint(double d) {
+int cpu_mch_double2loint(double d) {
   udouble ud;
   ud.d = d;
   unsigned long long mask = 0x00000000 | 0xFFFFFFFF;
@@ -25,7 +39,7 @@ __host__ __device__ int mch_double2loint(double d) {
   return (int) low;
 }
 
-__host__ __device__ double mch_hiloint2double(int high, int low) {
+double cpu_mch_hiloint2double(int high, int low) {
   unsigned h = high;
   unsigned l = low;
 
@@ -38,19 +52,19 @@ __host__ __device__ double mch_hiloint2double(int high, int low) {
   return u.d;
 }
 
-__host__ __device__ void getExpoMant(double a, double* EM) {
+void cpu_getExpoMant(double a, double* EM) {
   const double two_to_54 = 18014398509481984.0;
 
-  int ihi = mch_double2hiint(a);
-  int ilo = mch_double2loint(a);
+  int ihi = cpu_mch_double2hiint(a);
+  int ilo = cpu_mch_double2loint(a);
   int e = -1023;
 
   /* normalize denormals */
   if ((unsigned) ihi < (unsigned) 0x00100000) {
     a = a*two_to_54;
     e -= 54;
-    ihi = mch_double2hiint(a);
-    ilo = mch_double2loint(a);
+    ihi = cpu_mch_double2hiint(a);
+    ilo = cpu_mch_double2loint(a);
   }
   
   /*
@@ -61,7 +75,7 @@ __host__ __device__ void getExpoMant(double a, double* EM) {
   e += (ihi >> 20);
   ihi = (ihi & 0x800fffff) | 0x3ff00000;
 
-  double m = mch_hiloint2double(ihi, ilo);
+  double m = cpu_mch_hiloint2double(ihi, ilo);
   if ((unsigned) ihi > (unsigned) 0x3ff6a09e) {
     m = 0.5*m;
     e = e + 1;
@@ -72,6 +86,53 @@ __host__ __device__ void getExpoMant(double a, double* EM) {
 }
 
 // -------------------------------------------------------------------------
+// HELPER MATHEMATICAL FUNCTIONS
+// -------------------------------------------------------------------------
+
+double cpu_mch_rint(double a) {
+  if (a > 0) {
+    return (int) (a+0.5);
+  }
+
+  if (a < 0) {
+    return (int) (a-0.5);
+  }
+
+  return 0;
+}
+
+int cpu_i_abs(int i) {
+  const int i_max = 2147483647;
+  const int i_min =  -i_max - 1;
+
+  if (i_min == i) {
+    return i_max;
+  } else {
+    return i < 0 ? -i : i;
+  }
+}
+
+double cpu_f_abs(double i) {
+  return i < 0 ? -i : i;
+}
+
+bool cpu_is_nan(double x) {
+  return x != x;
+}
+
+bool cpu_is_inf(double x) {
+  unsigned long long ull_inf = 0x7ff00000;
+  ull_inf <<= 32;
+  const double infinity = *reinterpret_cast<double*>(&ull_inf);
+  return x == infinity;
+}
+
+bool cpu_is_abs_inf(double y) {
+  double x = cpu_f_abs(y);
+  return cpu_is_inf(x);
+}
+
+// -------------------------------------------------------------------------
 // END OF HELPERS
 // -------------------------------------------------------------------------
 
@@ -79,14 +140,10 @@ __host__ __device__ void getExpoMant(double a, double* EM) {
 // LOG BASED FUNCTIONS
 // -------------------------------------------------------------------------
 
-__host__ __device__ bool mch_isnan(double a) {
-  return (a != a);
-}
-
 /**
 * Function computing the natural logarithm
 */
-__host__ __device__ double friendly_log(const double x) {
+double cpu_friendly_log(const double x) {
   double a = (double) x;
   const double ln2_hi = 6.9314718055994529e-1;
   const double ln2_lo = 2.3190468138462996e-17;
@@ -100,7 +157,7 @@ __host__ __device__ double friendly_log(const double x) {
   const double notanumber = *reinterpret_cast<double*>(&ull_nan);
   
   double EM[2];
-  getExpoMant(a, EM);
+  cpu_getExpoMant(a, EM);
   double e = EM[0];
   double m = EM[1];
   
@@ -184,76 +241,11 @@ __host__ __device__ double friendly_log(const double x) {
   return q;
 }
 
-
-double mch__internal_accurate_pow(double a, double b) {
-  loga;
-  double2 prod;
-   t_hi, t_lo;
-  double tmp;
-  double e;
-
-  /* compute log(a) in double-double format*/
-  double2 loga = __internal_log_ext_prec(a);
-
-  /* prevent overflow during extended precision multiply */
-  if (fabs(b) > 1e304) b *= 1.220703125e-4;
-  /* compute b * log(a) in double-double format */
-  double t_hi = __dmul_rn (loga.y, b);   /* prevent FMA-merging */
-  double t_lo = __fma_rn (loga.y, b, -t_hi);
-  t_lo = __fma_rn (loga.x, b, t_lo);
-  prod.y = e = t_hi + t_lo;
-  prod.x = (t_hi - e) + t_lo;
-
-  /* compute pow(a,b) = exp(b*log(a)) */
-  double tmp = exp(prod.y);
-  /* prevent -INF + INF = NaN */
-  if (!__isinfd(tmp)) {
-    /* if prod.x is much smaller than prod.y, then exp(prod.y + prod.x) ~= 
-     * exp(prod.y) + prod.x * exp(prod.y) 
-     */
-    tmp = __fma_rn (tmp, prod.x, tmp);
-  }
-  return tmp;
-}
-
-// WARNING WRONG !!!
-__host__ __device__ double friendly_pow(const double x, const double y) {
-  //pow(a,b) = exp(b*log(a))
-  return friendly_exp(friendly_log(x)*y);
-}
-
 //--------------------------------------------------------------------------
 // EXPONENTIAL BASED FUNCTIONS
 //--------------------------------------------------------------------------
 
-__host__ __device__ double mch_rint(double a) {
-  if (a > 0) {
-    return (int) (a+0.5);
-  }
-
-  if (a < 0) {
-    return (int) (a-0.5);
-  }
-
-  return 0;
-}
-
-__host__ __device__ int i_abs(int i) {
-  const int i_max = 2147483647;
-  const int i_min =  -i_max - 1;
-
-  if (i_min == i) {
-    return i_max;
-  } else {
-    return i < 0 ? -i : i;
-  }
-}
-
-__host__ __device__ int f_abs(double i) {
-  return i < 0 ? -i : i;
-}
-
-__host__ __device__ double __exp_poly(double a) {
+double cpu___exp_poly(double a) {
   double t = 2.5052097064908941E-008;
   t = t*a + 2.7626262793835868E-007;
   t = t*a + 2.7557414788000726E-006;
@@ -270,50 +262,50 @@ __host__ __device__ double __exp_poly(double a) {
   return t;
 }
 
-__host__ __device__ double __exp_scale(double a, int i) {
+double cpu___exp_scale(double a, int i) {
   unsigned int k;
   unsigned int j;
 
-  if (i_abs(i) < 1023) {
+  if (cpu_i_abs(i) < 1023) {
     k = (i << 20) + (1023 << 20);
   } else {
     k = i + 2*1023;
     j = k/2;
     j = j << 20;
     k = (k << 20) - j;
-    a = a*mch_hiloint2double(j, 0);
+    a = a*cpu_mch_hiloint2double(j, 0);
   }
-  a = a*mch_hiloint2double(k, 0);
+  a = a*cpu_mch_hiloint2double(k, 0);
 
   return a;
 }
 
-__host__ __device__ double __exp_kernel(double a, int scale) {
+double cpu___exp_kernel(double a, int scale) {
   const double l2e = 1.4426950408889634e+0;
   const double ln2_hi = 6.9314718055994529e-1;
   const double ln2_lo = 2.3190468138462996e-17;
   
-  double t = mch_rint(a*l2e);
+  double t = cpu_mch_rint(a*l2e);
   int i = (int) t;
   double z = t*(-ln2_hi)+a;
   z = t*(-ln2_lo)+z;
-  t = __exp_poly(z);
-  z = __exp_scale(t, i + scale);
+  t = cpu___exp_poly(z);
+  z = cpu___exp_scale(t, i + scale);
   return z;
 }
 
-__host__ __device__ double friendly_exp(double x) {
+double cpu_friendly_exp(double x) {
   unsigned long long ull_inf = 0x7ff00000;
   ull_inf <<= 32;
   const double infinity = *reinterpret_cast<double*>(&ull_inf);
   
   double a = (double) x;
   double t;
-  int i = mch_double2hiint(a);
+  int i = cpu_mch_double2hiint(a);
   // We only check if we are in a specific range [-a,b] to compute
   // the exp
   if (((unsigned) i < (unsigned) 0x40862e43) || ((int) i < (int) 0xC0874911)) {
-    t = __exp_kernel(a, 0);
+    t = cpu___exp_kernel(a, 0);
   }
   // Otherwise the result is a very small value, then returning 0 or
   // a very large value then returning inf
@@ -325,5 +317,100 @@ __host__ __device__ double friendly_exp(double x) {
     }
   }
   return t;
+}
+
+//--------------------------------------------------------------------------
+// POWER BASED FUNCTIONS
+//--------------------------------------------------------------------------
+
+double cpu_internal_pow(const double x, const double y) {
+  double lnx = cpu_friendly_log(x);
+  double ylnx = y*lnx;
+  return cpu_friendly_exp(ylnx);
+}
+
+double cpu_friendly_pow(const double x, const double y) {
+  unsigned long long ull_inf = 0x7ff00000;
+  ull_inf <<= 32;
+  const double infinity = *reinterpret_cast<double*>(&ull_inf);
+  
+  unsigned long long ull_nan = 0xfff80000;
+  ull_nan <<= 32;
+  const double notanumber = *reinterpret_cast<double*>(&ull_nan);
+  
+  int yFloorOdd = cpu_f_abs(y - (2.0*trunc(0.5*y))) == 1.0;
+  
+  if ((x == 1.0) || (y == 0.0)) {
+    return 1.0;
+  } 
+  
+  else if (cpu_is_nan(x) || cpu_is_nan(y)) {    
+    return x + y;
+  }
+  
+  else if (cpu_is_abs_inf(y)) {
+    double ax = cpu_f_abs(x);
+    if (ax > 1.0) {      
+      if (y < 0.0) { // y is -infinity
+        return infinity;
+      }       
+      else { // y is infinity
+        return 0.0;
+      }
+    } else {
+      if (x == -1.0) {
+        return 1.0;
+      } 
+      else {        
+       if (y < 0.0) { // y is -infinity
+          return 0.0;
+        }         
+        else { // y is infinity
+          return infinity;
+        } 
+      }
+    }        
+  }
+  
+  else if (cpu_is_abs_inf(x)) {
+    if (y >= 0) {
+      if (x < 0.0 && yFloorOdd) {
+        return -1.0*infinity;
+      } else {
+        return infinity;
+      }
+    }    
+    else {
+      if (x < 0.0 && yFloorOdd) {
+        return -0.0;
+      } else {
+        return 0.0;
+      }
+    }
+  }
+  
+  else if (x == 0.0) {
+    if (y > 0.0) {
+      return 0.0;
+    } else {
+      return infinity;
+    }
+  }
+  
+  else if ((x < 0.0) && (y != trunc(y))) {
+    return notanumber;
+  }
+  
+  else { //pow(a,b) = exp(b*log(a))
+    double ax = cpu_f_abs(x);
+    double z = cpu_internal_pow(ax, y);
+    
+    if (x < 0.0 && yFloorOdd) {
+      return -z;
+    }
+    else {
+      return z;
+    }
+  }
 }
 
