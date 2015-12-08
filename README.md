@@ -10,15 +10,18 @@ Transcendental functions for _bitreproducibility_ in the context of `Stella`, `C
 
 ### How do I get set up? ###
 
-* The test depends on Google Test (https://github.com/google/googletest) and should be installed on the machine running the tests
+* The test depends on Google Test (https://github.com/google/googletest) and should be installed on the machine running the tests.
+
 * A Cuda and a `C++` compiler (ie. `nvcc 7.0.27` or `g++ 4.9.3`) compatible with C++11 is needed
+
 * The test tools and the math functions must be compiled first:
     * `g++ -std=c++11 -c test_tools.cpp`
     * `g++ -c cpu_mch_math.cpp`
-* Then the tests are compiled like: `nvcc -g --std=c++11 -isystem ${GTEST}/googletest/include cuda_unittest.cu ${GTEST}/build/googlemock/gtest/libgtest.a test_tools.o cpu_mch_math.o -o mathUnitTests.out`
-* Finally run the tests like: `srun -n 1 -p debug --gres=gpu:1 -t 00:10:00 ./mathUnitTests.out`
 
-This produces an output of the form:
+* Then the tests are compiled like: 
+`nvcc -g --std=c++11 -isystem ${GTEST}/googletest/include cuda_unittest.cu ${GTEST}/build/googlemock/gtest/libgtest.a test_tools.o cpu_mch_math.o -o mathUnitTests.out`
+
+Finally run the tests like: `srun -n 1 -p debug --gres=gpu:1 -t 00:10:00 ./mathUnitTests.out`. This produces an output of the form:
 ```
 [==========] Running 2 tests from 2 test cases.
 [----------] Global test environment set-up.
