@@ -1,6 +1,6 @@
 # README #
 
-Transcendental functions for _bitreproducibility_ in the context of `Stella`, `Cosmo` and the CrClim project.
+Transcendental functions for _bitreproducibility_ in the context of Stella, Cosmo and the CrClim project.
 
 ### What is this repository for? ###
 
