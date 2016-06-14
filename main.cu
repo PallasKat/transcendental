@@ -87,6 +87,7 @@ float gToc(bool verbose, std::string msg) {
 
 __global__ void test_device_log(double* x, double* z, int n) {    
   int i = blockIdx.x;
+  //std::cout << "i:" << i << std::endl;
   if (i < n) {
     z[i] = friendly_log(x[i]);
   }
@@ -261,7 +262,8 @@ void freeThem(double* pDevX, double* pDevY, double* pDevZ, double* pDevLibZ) {
 int isBitRepro(double* x, double* c, double* g, int n) {
   int ok = 1;
   for (int i = 0; i < n; i++) {
-    if (c[i] != g[i] && c[i] == c[i] && g[i] == g[i]) {
+    //if (c[i] != g[i] && c[i] == c[i] && g[i] == g[i]) {
+    if (c[i] != g[i]) {
       outfile << i << ": " << x[i] << ": " << c[i] << " and " << g[i] << "\n";
       ok = 0;
     }
@@ -453,6 +455,10 @@ int main(void) {
   // ==============================================================  
   // POWER FUNCTION (EXPONENTIATION)
   // ==============================================================     
+  
+  if (br == 0) {
+    return 1;
+  }
   
   mch_gpu_t = 0.0;
   mch_cpu_t = 0.0;

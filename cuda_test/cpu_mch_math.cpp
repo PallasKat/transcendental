@@ -120,17 +120,42 @@ bool cpu_is_nan(double x) {
   return x != x;
 }
 
-bool cpu_is_inf(double x) {
+inline double posInf() {
   unsigned long long ull_inf = 0x7ff00000;
   ull_inf <<= 32;
-  const double infinity = *reinterpret_cast<double*>(&ull_inf);
+  return *reinterpret_cast<double*>(&ull_inf);
+}
+
+inline double negInf() {
+  return -posInf();
+}
+
+inline double getNan() {
+  unsigned long long ull_nan = 0xfff80000;
+  ull_nan <<= 32;
+  return *reinterpret_cast<double*>(&ull_nan);
+}
+
+bool cpu_is_inf(double x) {
+  const double infinity = posInf();
   return x == infinity;
+}
+
+bool isInf(double x) {
+  return cpu_is_inf(x);
+}
+
+bool isNegInf(double x) {
+  const double negInfinity = negInf();
+  return x == negInfinity;
 }
 
 bool cpu_is_abs_inf(double y) {
   double x = cpu_f_abs(y);
   return cpu_is_inf(x);
 }
+
+
 
 // -------------------------------------------------------------------------
 // END OF HELPERS
@@ -329,7 +354,105 @@ double cpu_internal_pow(const double x, const double y) {
   return cpu_friendly_exp(ylnx);
 }
 
+// Is the double value a natural number ?
+inline bool isInt(double x) {
+  return trunc(x) == x;
+}
+
+// Is the double value not a natural number or a pair natural number ?
+inline bool evenIntOrNotInt(double x) {
+  if (cpu_is_abs_inf(x)) return false;
+  else {
+    double xTrunc = trunc(x);
+    return ((xTrunc == x) && ((int) xTrunc % 2 == 0) || (xTrunc != x));
+  }
+}
+
+// Is the value in (-inf, inf) ?
+inline bool betweenInf(double x) {
+  return negInf() < x && x < posInf();
+}
+
+// Is the value in (-inf, 0) ?
+inline bool smallerThanZero(double x) {
+  return negInf() < x && x < 0.0;
+}
+
+// Is the value in (0, inf) ?
+inline bool greaterThanZero(double x) {
+  return 0.0 < x && x < posInf();
+}
+
+// Do those x, y values produce a real number when computing x^y ?
+// I.e not an infinity or a complex (a,ib) value (NaN).
+inline bool classic(double x, double y) {
+  if (betweenInf(y) && y != 0) {
+    return greaterThanZero(x) && x != 1.0 || smallerThanZero(x) && isInt(y);
+  } else {
+    return false;
+  }
+}
+
+// Do those x, y values produce an infinity when computing x^y ?
+inline bool bordersInf(double x, double y) {
+  return
+    (x == 0.0 && y < 0.0) || (cpu_f_abs(x) < 1.0 && isNegInf(y)) ||
+    (isInf(x) && y > 0.0) ||
+    (isNegInf(x) && y < 0.0 && evenIntOrNotInt(y)) ||
+    (1.0 < cpu_f_abs(x) && isInf(y));
+}
+
+// Do those x, y values produce a zero when computing x^y ?
+inline bool bordersZero(double x, double y) {
+  return
+    (x == 0.0 && 0.0 < y) || (cpu_f_abs(x) < 1.0 && isInf(y)) ||
+    (isInf(x) && 0.0 > y) ||
+    (isNegInf(x) && 0.0 < y && evenIntOrNotInt(y)) ||
+    (1.0 < cpu_f_abs(x) && isNegInf(y));
+}
+
 double cpu_friendly_pow(const double x, const double y) {
+  int yFloorOdd = cpu_f_abs(y - (2.0*trunc(0.5*y))) == 1.0;
+
+  if (cpu_is_nan(x) || cpu_is_nan(y)) return x + y;
+
+  if ((x == 1.0) || (y == 0.0)) return 1.0;
+
+  // values for x^y that tend to infnity
+  if (bordersInf(x, y)) return posInf();
+  // values for x^y that tend to 0
+  if (bordersZero(x, y)) return 0.0;
+
+  // values for x^y that tend to -infnity. Note that the
+  // check for yFloorOdd is a security, those values should
+  // have returned in bordersInf
+  if (isNegInf(x) && y < 0.0) {
+    if (yFloorOdd) return negInf();
+    else return posInf();
+  }
+
+  // values for x^y that tend to -0.0. Note that the
+  // check for yFloorOdd is a security, those values should
+  // have returned in bordersZero
+  if (isNegInf(x) && 0.0 < y) {
+    if (yFloorOdd) return -0.0;
+    else return 0.0;
+  }
+  // Values that can be computed in R
+  if (classic(x, y)) {
+    double ax = cpu_f_abs(x);
+    double z = cpu_internal_pow(ax, y);
+
+    if (x < 0.0 && yFloorOdd) return -z;
+    else return z;
+  }
+
+  // The rest are the values that are either indetermined or
+  // that produce a complex (a,ib) result and thus return an NaN
+  return getNan();
+}
+
+double cpu_friendly_pow2(const double x, const double y) {
   unsigned long long ull_inf = 0x7ff00000;
   ull_inf <<= 32;
   const double infinity = *reinterpret_cast<double*>(&ull_inf);
@@ -347,9 +470,10 @@ double cpu_friendly_pow(const double x, const double y) {
   else if (cpu_is_nan(x) || cpu_is_nan(y)) {
     return x + y;
   }
-
+  // x^y -> y = |inf|
   else if (cpu_is_abs_inf(y)) {
     double ax = cpu_f_abs(x);
+    // |x| > 1
     if (ax > 1.0) {
       if (y < 0.0) { // y is -infinity
         return infinity;
@@ -357,7 +481,9 @@ double cpu_friendly_pow(const double x, const double y) {
       else { // y is infinity
         return 0.0;
       }
-    } else {
+    }
+    // |x| <= 1
+    else {
       if (x == -1.0) {
         return 1.0;
       }
@@ -371,15 +497,20 @@ double cpu_friendly_pow(const double x, const double y) {
       }
     }
   }
-
+  // x^y -> x = |inf|
   else if (cpu_is_abs_inf(x)) {
+    // |y| >= 0
     if (y >= 0) {
+      // x = inf
       if (x < 0.0 && yFloorOdd) {
         return -1.0*infinity;
-      } else {
+      }
+      // x = -inf
+      else {
         return infinity;
       }
     }
+    // |y| < 0
     else {
       if (x < 0.0 && yFloorOdd) {
         return -0.0;
@@ -389,6 +520,7 @@ double cpu_friendly_pow(const double x, const double y) {
     }
   }
 
+  // x = 0
   else if (x == 0.0) {
     if (y > 0.0) {
       return 0.0;
@@ -396,12 +528,13 @@ double cpu_friendly_pow(const double x, const double y) {
       return infinity;
     }
   }
-
+  // x < 0
+  // complex results -> (a,b*i)
   else if ((x < 0.0) && (y != trunc(y))) {
     return notanumber;
   }
-
-  else { //pow(a,b) = exp(b*log(a))
+  //a^b = e^(b*log(a))
+  else {
     double ax = cpu_f_abs(x);
     double z = cpu_internal_pow(ax, y);
 

@@ -1,10 +1,10 @@
-#include <cmath>
+//#include <cmath>
 
 /**
-  GPU version of the mathematical functions. This listing should be exactly the 
+  GPU version of the mathematical functions. This listing should be exactly the
   same as the one implemented for the CPU. It has been split for test purpose
   in the context of bit reproducibility.
-  
+
   See cpu_mch_math.cpp for the CPU twin file.
 */
 
@@ -62,7 +62,7 @@ __device__ void getExpoMant(double a, double* EM) {
     ihi = mch_double2hiint(a);
     ilo = mch_double2loint(a);
   }
-  
+
   /*
    * a = m * 2^e.
    * m <= sqrt(2): log2(a) = log2(m) + e.
@@ -140,23 +140,24 @@ __device__ bool __is_abs_inf(double y) {
 * Function computing the natural logarithm
 */
 __device__ double friendly_log(const double x) {
+  //printf("[GPU LOG] %f\n", x);
   double a = (double) x;
   const double ln2_hi = 6.9314718055994529e-1;
   const double ln2_lo = 2.3190468138462996e-17;
-  
+
   unsigned long long ull_inf = 0x7ff00000;
   ull_inf <<= 32;
   const double infinity = *reinterpret_cast<double*>(&ull_inf);
-  
+
   unsigned long long ull_nan = 0xfff80000;
   ull_nan <<= 32;
   const double notanumber = *reinterpret_cast<double*>(&ull_nan);
-  
+
   double EM[2];
   getExpoMant(a, EM);
   double e = EM[0];
   double m = EM[1];
-  
+
   double q;
 
   if ((a > 0.0) && (a < infinity)) {
@@ -234,6 +235,7 @@ __device__ double friendly_log(const double x) {
   //printf("Returned q: %f\n", q);
   //double qq = log(x);
   //printf("Should be: %f\n", qq);
+  //printf("[GPU LOG] %f -> %f\n", x, q);
   return q;
 }
 
@@ -285,7 +287,7 @@ __device__ double __exp_kernel(double a, int scale) {
   const double l2e = 1.4426950408889634e+0;
   const double ln2_hi = 6.9314718055994529e-1;
   const double ln2_lo = 2.3190468138462996e-17;
-  
+
   double t = mch_rint(a*l2e);
   int i = (int) t;
   double z = t*(-ln2_hi)+a;
@@ -296,10 +298,11 @@ __device__ double __exp_kernel(double a, int scale) {
 }
 
 __device__ double friendly_exp(double x) {
+  //printf("x -> %f", x);
   unsigned long long ull_inf = 0x7ff00000;
   ull_inf <<= 32;
   const double infinity = *reinterpret_cast<double*>(&ull_inf);
-  
+
   double a = (double) x;
   double t;
   int i = mch_double2hiint(a);
@@ -334,45 +337,45 @@ __device__ double friendly_pow(const double x, const double y) {
   unsigned long long ull_inf = 0x7ff00000;
   ull_inf <<= 32;
   const double infinity = *reinterpret_cast<double*>(&ull_inf);
-  
+
   unsigned long long ull_nan = 0xfff80000;
   ull_nan <<= 32;
   const double notanumber = *reinterpret_cast<double*>(&ull_nan);
-  
+
   int yFloorOdd = f_abs(y - (2.0*trunc(0.5*y))) == 1.0;
-  
+
   if ((x == 1.0) || (y == 0.0)) {
     return 1.0;
-  } 
-  
-  else if (__is_nan(x) || __is_nan(y)) {    
+  }
+
+  else if (__is_nan(x) || __is_nan(y)) {
     return x + y;
   }
-  
+
   else if (__is_abs_inf(y)) {
     double ax = f_abs(x);
-    if (ax > 1.0) {      
+    if (ax > 1.0) {
       if (y < 0.0) { // y is -infinity
         return infinity;
-      }       
+      }
       else { // y is infinity
         return 0.0;
       }
     } else {
       if (x == -1.0) {
         return 1.0;
-      } 
-      else {        
+      }
+      else {
        if (y < 0.0) { // y is -infinity
           return 0.0;
-        }         
+        }
         else { // y is infinity
           return infinity;
-        } 
+        }
       }
-    }        
+    }
   }
-  
+
   else if (__is_abs_inf(x)) {
     if (y >= 0) {
       if (x < 0.0 && yFloorOdd) {
@@ -380,7 +383,7 @@ __device__ double friendly_pow(const double x, const double y) {
       } else {
         return infinity;
       }
-    }    
+    }
     else {
       if (x < 0.0 && yFloorOdd) {
         return -0.0;
@@ -389,7 +392,7 @@ __device__ double friendly_pow(const double x, const double y) {
       }
     }
   }
-  
+
   else if (x == 0.0) {
     if (y > 0.0) {
       return 0.0;
@@ -397,11 +400,11 @@ __device__ double friendly_pow(const double x, const double y) {
       return infinity;
     }
   }
-  
+
   else if ((x < 0.0) && (y != trunc(y))) {
     return notanumber;
   }
-  
+
   else { //pow(a,b) = exp(b*log(a))
     double ax = f_abs(x);
     double z = __internal_pow(ax, y);
@@ -413,4 +416,3 @@ __device__ double friendly_pow(const double x, const double y) {
     }
   }
 }
-
