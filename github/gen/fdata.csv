@@ -1,0 +1,3 @@
+exp,cpu_exp,gpu_exp,exp,1
+log,cpu_log,gpu_log,log,1
+pow,cpu_pow,gpu_pow,pow,2

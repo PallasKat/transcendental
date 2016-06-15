@@ -5,8 +5,13 @@
 #include <stdlib.h>
 
 // =============================================================================
-// ARRAY FILL HELPERS
+// ARRAY FILL HELPERS:
+// This is mainly used to fill inputs for the test functions
 // =============================================================================
+
+// -----------------------------------------------------------------------------
+// Random real values
+// -----------------------------------------------------------------------------
 
 // return a random double in [a,b)
 inline double randomDouble(int a, int b) {
@@ -27,23 +32,8 @@ std::vector<double> randomFill(size_t n) {
   return randomFill(0, 1, n);
 }
 
-// Fill the array ary of size n with a given value
-std::vector<double> valueFill(double d, size_t n) {
-  std::vector<double> ary(n);
-  for (size_t i = 0; i < n; i++) {
-    ary[i] = d;
-  }
-  return ary;
-}
-
-// Fill the array ary of size n with a given value
-std::vector<double> zeroFill(size_t n) {
-  return valueFill(0, n);
-}
-
 // Fill the array ary of size n with random values x in [a,b)
-// where the floor of x, if x > 0, is even and if x < 0 the
-// ceil is even
+// whose truncated value is even
 std::vector<double> randomEvenFill(int a, int b, size_t n) {
   std::vector<double> y(n);
   for (size_t i = 0; i < n; i++) {
@@ -55,6 +45,10 @@ std::vector<double> randomEvenFill(int a, int b, size_t n) {
   }
   return y;
 }
+
+// -----------------------------------------------------------------------------
+// Random integer values (as double)
+// -----------------------------------------------------------------------------
 
 // return a random integer (as double) in [a,b]
 inline double randomInteger(int a, int b) {
@@ -71,8 +65,28 @@ std::vector<double> randomIntFill(int a, int b, size_t n) {
   return y;
 }
 
+// -----------------------------------------------------------------------------
+// Fixed values
+// -----------------------------------------------------------------------------
+
+// Fill the array ary of size n with a given value
+std::vector<double> valueFill(double d, size_t n) {
+  std::vector<double> ary(n);
+  for (size_t i = 0; i < n; i++) {
+    ary[i] = d;
+  }
+  return ary;
+}
+
+// Fill the array ary of size n with a given value
+std::vector<double> zeroFill(size_t n) {
+  return valueFill(0, n);
+}
+
 // =============================================================================
-// ERROR HELPERS
+// ERROR HELPERS:
+// Mainly used to compute the error betweem a reference and an expected value
+// in the test functions
 // =============================================================================
 
 // Compute the absolute error between val and expected
