@@ -1,18 +1,20 @@
-# README #
+# README
 
-Transcendental functions for _bitreproducibility_ in the context of Stella, Cosmo and the CrClim project.
+This repository contains a set of portable transcendental functions to be used for bit-reproducibility. Currently this is aimed to be integrated in the Stella library used by the Dycore and Cosmo model in the context of the CrClim project. This project is a joint collaboration between MeteoSchweiz and the ETHZ.
 
-### What is this repository for? ###
+## Introduction
 
-* This repository contains the experimental code for the transcendental functions that are added to Stella for bitreproduciblity. The proposed implementation concerns the logarithm, the exponential and the exponentiation mathematical functions. For now the implementation are only for `double` values.
+The goal is to provide a set of transcendental function that are used regardless the compiler or the mathematical library. Indeed as the approximation of these functions can differ between libraries, this produces results that are not bit-reproductible. Hence the provided code should be compiled for any accelerator. For now we propose to only support GPU accelerators (CUDA).
 
-* The code is actually experimental and it intended to run on CPU and GPU.
+The proposed implementation is written in C++ and contains the logarithm, exponential and exponentiation mathematical functions. For now the implementation are only for `double` values. But the support for `single` should be added and the set of function extended with trigonometric, inverse trigonometric and hyperbolic functions. These functions are required by the Cosmo model. The current code is actually experimental and is not yet intended for production.
 
-### How do I get set up? ###
+## Dependencies
 
-* The test depends on Google Test (https://github.com/google/googletest) and should be installed on the machine running the tests.
+To compile the functions, a Cuda and a C++ compiler compatible with C++11 are needed (ie. nvcc 7.0.27 or g++ 4.9.3).
 
-* A Cuda and a C++ compiler (ie. nvcc 7.0.27 or g++ 4.9.3) compatible with C++11 is needed
+Unit tests are also provided to assess the reproducibility of the computation as long with the accuracy regarding the standard mathematical C++ library. The tests depend on Google Test (https://github.com/google/googletest) and should be installed on the machine running the tests.
+
+## Compilation and execution 
 
 * The test tools and the math functions must be compiled first:
     * `g++ -std=c++11 -c test_tools.cpp`
@@ -42,7 +44,7 @@ Finally to run the tests on a CSCS machine, use `srun -n 1 -p debug --gres=gpu:1
 ```
 ### Contribution guidelines ###
 
-* The code and the test are written by Christophe Charpilloz (MeteoSwiss)
+* The code and the test are written by XXX (MCH)
 * The mathematical implementation are inspired by the one proposed by Nvidia Corporation (http://www.nvidia.com)
 
 ### Who do I talk to? ###
