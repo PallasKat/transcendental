@@ -1,3 +1,5 @@
+#include <vector>
+
 void verifyTol(
   const std::vector<double>& expectedVals,
   const std::vector<double>& values,
@@ -19,6 +21,25 @@ void verifyTol(
   const double tol
 );
 
+void verifyEq(
+  const std::vector<double>& expectedVals,
+  const std::vector<double>& values,
+  const std::vector<double>& x,
+  const std::vector<double>& y
+);
+
+void verifyEq(
+  const std::vector<double>& expectedVals,
+  const std::vector<double>& values,
+  const std::vector<double>& x
+);
+
+void verifyEq(
+  const std::vector<double>& expectedVals,
+  const std::vector<double>& values
+);
+
+/*
 template<class G, class R>
 void testCpuTolOn(
   const std::vector<double> x,
@@ -44,3 +65,4 @@ void testGpuLogTolOn(
   const std::vector<double> x,
   const double tol
 );
+*/

@@ -15,14 +15,11 @@
 // to use the cuda functors on vectors
 #include "cufunctors.h"
 // to use the tolerance checkers
-//#include "tolerance.h"
+#include "tolerance.h"
 // to get infinity
 #include <limits>
 
-const size_t N = 1000*1000*10;
-const double TOL = 10E-10;
-
-
+/*
 void verifyTol(
   const std::vector<double>& expectedVals,
   const std::vector<double>& values,
@@ -75,7 +72,7 @@ void verifyTol(
   std::vector<double> emptiness;
   verifyTol(expectedVals, values, emptiness, emptiness, tol);
 }
-
+*/
 template<class G, class R>
 void testCpuTolOn(
   const std::vector<double> x,
@@ -100,17 +97,41 @@ void testGpuTolOn(
   verifyTol(expectedValues, crClimValues, x, tol);
 }
 
+/*
+template<class G, class R>
+void testCpuEqOn(
+  const std::vector<double> x,
+  G cpuFunctor,
+  R refFunctor
+) {
+	testCpuTolOn(x, 0.0, cpuFunctor, refFunctor);  
+}
+
+template<class G, class R>
+void testGpuEqOn(
+  const std::vector<double> x,
+  G gpuFunctor,
+  R refFunctor
+) {
+  testGpuTolOn(x, 0.0, gpuFunctor, refFunctor);
+}
+*/
+
+// =============================================================================
+// THE TESTS
+// =============================================================================
+const size_t N = 1000*10;
+const double TOL = 10E-10;
+
+// =============================================================================
+// TESTING THE LOGARITHM FUNCTIONS
+// =============================================================================
 
 void testCpuLogTolOn(
   const std::vector<double> x,
   const double tol
 ) {
   testCpuTolOn(x, tol, CpuLog(), LibLog());
-}
-
-TEST(LogCPUTest, PositiveValues) {
-  std::vector<double> x = randomFill(0, 100, N);
-  testCpuLogTolOn(x, TOL);
 }
 
 void testGpuLogTolOn(
@@ -120,9 +141,58 @@ void testGpuLogTolOn(
   testGpuTolOn(x, tol, GpuLog(), LibLog());
 }
 
+void testCpuLogEqOn(const std::vector<double> x) {
+	//testCpuEqOn(x, CpuLog(), LibLog());
+	testCpuLogTolOn(x, 0.0);
+}
+
+void testGpuLogEqOn(const std::vector<double> x) {
+	//testGpuEqOn(x, GpuLog(), LibLog());
+	testGpuLogTolOn(x, 0.0);
+}
+
+TEST(LogCPUTest, PositiveValues) {
+  std::vector<double> x = randomFill(0, 100, N);
+  testCpuLogTolOn(x, TOL);
+}
+
+TEST(LogCPUTest, NegativeValues) {
+  std::vector<double> x = randomFill(-100, 0, N);
+  testCpuLogTolOn(x, TOL);
+}
+
+TEST(LogErrCPUTest, Zero) {
+  std::vector<double> x = {0.0};
+  testCpuLogEqOn(x);
+}
+
+TEST(LogErrCPUTest, Infinity) {
+  double posInf = std::numeric_limits<double>::infinity();
+  double negInf = -posInf;
+  std::vector<double> x = {negInf, posInf};
+  testCpuLogEqOn(x);
+}
+
 TEST(LogGPUTest, PositiveValues) {
   std::vector<double> x = randomFill(0, 100, N);
   testGpuLogTolOn(x, TOL);
+}
+
+TEST(LogGPUTest, NegativeValues) {
+  std::vector<double> x = randomFill(-100, 0, N);
+  testGpuLogTolOn(x, TOL);
+}
+
+TEST(LogGPUTest, Zero) {
+  std::vector<double> x = {0.0};
+  testGpuLogEqOn(x);
+}
+
+TEST(LogGPUTest, Infinity) {
+  double posInf = std::numeric_limits<double>::infinity();
+  double negInf = -posInf;
+  std::vector<double> x = {negInf, posInf};
+  testGpuLogEqOn(x);
 }
 
 // =============================================================================

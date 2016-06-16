@@ -2,15 +2,13 @@
 // google test
 #include "gtest/gtest.h"
 // printf, scanf, puts, NULL
-#include <stdio.h>
+//#include <stdio.h>
 // std
 #include <iostream>
 // srand, rand
 #include <stdlib.h>
-// to use the functors on vectors
-#include "functors.h"
-// to use the cuda functors on vectors
-#include "cufunctors.h"
+// test helpers
+#include "test_tools.h"
 
 void verifyTol(
   const std::vector<double>& expectedVals,
@@ -19,13 +17,19 @@ void verifyTol(
   const std::vector<double>& y,
   const double tol
 ) {
+	double err;
+
   //printf("[VERIF] %f => %f; %f\n", x[0], values[0], expectedVals[0]);
   if (expectedVals.size() != values.size()) {
     FAIL() << "The vectors have different lengths.";
   }
 
   for (auto i = 0; i < values.size(); i++) {
-    double err = relativeError(values[i], expectedVals[i]);
+  	if (tol == 0.0) {
+    	err = absoluteError(values[i], expectedVals[i]);
+    } else {
+    	err = relativeError(values[i], expectedVals[i]);
+    }
     if (isnan(expectedVals[i]) && isnan(values[i])) {
       SUCCEED();
     } else if (isinf(expectedVals[i]) && isinf(values[i])) {
@@ -65,26 +69,28 @@ void verifyTol(
   verifyTol(expectedVals, values, emptiness, emptiness, tol);
 }
 
-template<class G, class R>
-void testCpuTolOn(
-  const std::vector<double> x,
-  const double tol,
-  G cpuFunctor,
-  R refFunctor
+void verifyEq(
+  const std::vector<double>& expectedVals,
+  const std::vector<double>& values,
+  const std::vector<double>& x,
+  const std::vector<double>& y
 ) {
-  std::vector<double> crClimValues = applyCpuOp1(x, cpuFunctor);
-  std::vector<double> expectedValues = applyCpuOp1(x, refFunctor);
-  verifyTol(expectedValues, crClimValues, x, tol);
+  verifyTol(expectedVals, values, x, y, 0.0);
 }
 
-template<class G, class R>
-void testGpuTolOn(
-  const std::vector<double> x,
-  const double tol,
-  G gpuFunctor,
-  R refFunctor
+void verifyEq(
+  const std::vector<double>& expectedVals,
+  const std::vector<double>& values,
+  const std::vector<double>& x
 ) {
-  std::vector<double> crClimValues = applyGpuOp1(x, gpuFunctor);
-  std::vector<double> expectedValues = applyCpuOp1(x, refFunctor);
-  verifyTol(expectedValues, crClimValues, x, tol);
+  std::vector<double> emptiness;
+  verifyEq(expectedVals, values, x, emptiness);
+}
+
+void verifyEq(
+  const std::vector<double>& expectedVals,
+  const std::vector<double>& values
+) {
+  std::vector<double> emptiness;
+  verifyEq(expectedVals, values, emptiness, emptiness);
 }
