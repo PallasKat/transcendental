@@ -16,14 +16,22 @@ Unit tests are also provided to assess the reproducibility of the computation as
 
 ## Compilation and execution 
 
-* The test tools and the math functions must be compiled first:
-    * `g++ -std=c++11 -c test_tools.cpp`
-    * `g++ -c cpu_mch_math.cpp`
+First the test helpers should be compiled:
+`g++ -std=c++11 -c test_tools.cpp`
+and
+`g++ -std=c++11 -isystem ${GTEST}/googletest/include -c tolerance.cpp`
 
-* Then the tests are compiled like: 
-    * `nvcc -g --std=c++11 -isystem ${GTEST}/googletest/include cuda_unittest.cu ${GTEST}/build/googlemock/gtest/libgtest.a test_tools.o cpu_mch_math.o -o mathUnitTests.out`
+Then the transcendental functions:
+`g++ -std=c++11 -ffp-contract=off -c portable_math.cpp -o cpu_portable_math.o`
+and
+`nvcc -rdc=true --fmad=false -arch=sm_37 -dc portable_math.cu -o gpu_portable_math.o`
 
-Finally to run the tests on a CSCS machine, use `srun -n 1 -p debug --gres=gpu:1 -t 00:10:00 ./mathUnitTests.out` and this produces an output of the form:
+Finally the tests for the approximation:
+`nvcc -rdc=true -g -arch=sm_37 --std=c++11 -isystem ${GTEST}/googletest/include approxtests.cu ${GTEST}/build/googlemock/gtest/libgtest.a test_tools.o cpu_portable_math.o gpu_portable_math.o tolerance.o -o approxTests.out`
+and the tests for reproduciblity:
+`nvcc -rdc=true -g -arch=sm_37 --std=c++11 -isystem ${GTEST}/googletest/include bitreprotests.cu ${GTEST}/build/googlemock/gtest/libgtest.a test_tools.o cpu_portable_math.o gpu_portable_math.o tolerance.o -o reproTests.out`
+
+Finally to run the tests on a CSCS machine, use `srun -n 1 -p debug --gres=gpu:1 -t 00:10:00 ./approxTests.out` and this produces an output of the form:
 ```
 [==========] Running 2 tests from 2 test cases.
 [----------] Global test environment set-up.
@@ -40,13 +48,15 @@ Finally to run the tests on a CSCS machine, use `srun -n 1 -p debug --gres=gpu:1
 [----------] Global test environment tear-down
 [==========] 2 tests from 2 test cases ran. (455 ms total)
 [  PASSED  ] 2 tests.
-
 ```
-### Contribution guidelines ###
+and also `srun -n 1 -p debug --gres=gpu:1 -t 00:10:00 ./reproTests.out`:
+```
+[==========] Running 2 tests from 2 test cases.
+[----------] Global test environment set-up.
+...
+[  PASSED  ] 2 tests.
+```
 
-* The code and the test are written by XXX (MCH)
-* The mathematical implementation are inspired by the one proposed by Nvidia Corporation (http://www.nvidia.com)
+## Contribution guidelines
 
-### Who do I talk to? ###
-
-* Repo owner or admin
+The code and the test are written by PallasKat (MeteoSchweiz) and the mathematical implementation are inspired by the one proposed by Nvidia Corporation (http://www.nvidia.com).
