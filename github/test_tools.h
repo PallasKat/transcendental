@@ -3,6 +3,9 @@
 // vector
 #include <vector>
 
+// Print a vector on standard output
+void printVector(const std::vector<double>& v);
+
 // Fill the array ary of size n with random values in [a,b)
 std::vector<double> randomFill(int a, int b, size_t n);
 

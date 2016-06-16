@@ -33,6 +33,9 @@ std::vector<double> applyGpuOp1(
 
   double* pDevX = NULL;
   sendToDevice(pDevX, v.data(), n);
+  //std::vector<double> u = valueFill(0.0, n);
+  //printVector(u);
+  //sendToDevice(pDevX, u.data(), n);
 
   double* pDevY = NULL;
   std::vector<double> y(n);

@@ -3,6 +3,19 @@
 #include <cmath>
 // srand, rand
 #include <stdlib.h>
+#include <iostream>
+
+// =============================================================================
+// VECTOR HELPER
+// =============================================================================
+
+void printVector(const std::vector<double>& v) {
+  const size_t n = v.size();
+  for (auto i = 0; i < n; i++) {
+    std::cout << v[i] << " ";
+  }
+  std::cout << std::endl;
+}
 
 // =============================================================================
 // ARRAY FILL HELPERS:
@@ -91,7 +104,7 @@ std::vector<double> zeroFill(size_t n) {
 
 // Compute the absolute error between val and expected
 double absoluteError(double val, double trueValue) {
-  return abs(val - trueValue);
+  return std::abs(val - trueValue);
 }
 
 // Compute the relative error between val and expected

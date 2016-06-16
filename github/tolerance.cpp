@@ -1,12 +1,7 @@
 #include "tolerance.h"
+
 // google test
 #include "gtest/gtest.h"
-// printf, scanf, puts, NULL
-//#include <stdio.h>
-// std
-#include <iostream>
-// srand, rand
-#include <stdlib.h>
 // test helpers
 #include "test_tools.h"
 
@@ -19,7 +14,6 @@ void verifyTol(
 ) {
 	double err;
 
-  //printf("[VERIF] %f => %f; %f\n", x[0], values[0], expectedVals[0]);
   if (expectedVals.size() != values.size()) {
     FAIL() << "The vectors have different lengths.";
   }

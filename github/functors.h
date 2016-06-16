@@ -22,6 +22,7 @@ std::vector<double> applyCpuOp1(
   for (auto i = 0; i < x.size(); i++) {
     y[i] = functor(x[i]);
   }
+
   return y;
 }
 

@@ -9,11 +9,11 @@
 */
 
 #ifdef __CUDACC__
-  #pragma message using nvcc
+  #pragma message "using nvcc"
   #define __ACC__ __device__
   namespace gm {
 #else
-  #pragma message probably using gcc
+  #pragma message "probably using gcc"
   #include <cmath>
   #define __ACC__
   namespace cm {
@@ -114,7 +114,7 @@
   __ACC__ 
   int i_abs(int i) {
     const int i_max = 2147483647;
-    const int i_min =  -i_max - 1;
+    const int i_min = -i_max - 1;
 
     if (i_min == i) {
       return i_max;
