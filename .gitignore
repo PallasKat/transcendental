@@ -2,6 +2,7 @@ build/
 *.txt
 *.out
 *.o
+*.sass
 core.*
 
 
