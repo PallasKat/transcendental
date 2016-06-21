@@ -56,25 +56,16 @@ std::vector<double> applyGpuOp1(
 
 template<class F>
 std::vector<double> applyGpuBenchOp1(
-  //const std::vector<double>& v,
   double* pDevX,
   double* pDevY,
   size_t n,
   F functor
 ) {
-  //const uint32_t n = v.size();
-
+  // we want the host to wait on the device
   cudaEvent_t start, stop;
   cudaEventCreate(&start);
   cudaEventCreate(&stop);
 
-  //double* pDevX = NULL;
-  //sendToDevice(pDevX, v.data(), n);
-  //std::vector<double> u = valueFill(0.0, n);
-  //printVector(u);
-  //sendToDevice(pDevX, u.data(), n);
-
-  //double* pDevY = NULL;
   std::vector<double> y(n);
   gpuErrchk(cudaMalloc((void**) &pDevY, n*sizeof(double)));
 
@@ -83,10 +74,6 @@ std::vector<double> applyGpuBenchOp1(
   GpuOperation1<<<128, 128>>>(pDevX, pDevY, n, functor);
   cudaEventRecord(stop);
   cudaEventSynchronize(stop);
-
-  // freeing memory on the device
-  //gpuErrchk(cudaFree(pDevX));
-  //gpuErrchk(cudaFree(pDevY));
 
   // copy elision by the compiler ?
   return y;
@@ -139,5 +126,31 @@ std::vector<double> applyGpuOp2(
   gpuErrchk(cudaFree(pDevY));
   gpuErrchk(cudaFree(pDevZ));
 
+  return z;
+}
+
+template<class F>
+std::vector<double> applyGpuBenchOp2(
+  double* pDevX,
+  double* pDevY,
+  double* pDevZ,
+  size_t n,
+  F functor
+) {
+  // we want the host to wait on the device
+  cudaEvent_t start, stop;
+  cudaEventCreate(&start);
+  cudaEventCreate(&stop);
+
+  std::vector<double> z(n);
+  gpuErrchk(cudaMalloc((void**) &pDevZ, n*sizeof(double)));
+
+  // applying operations and copying the result back to the memory
+  cudaEventRecord(start);
+  GpuOperation2<<<128, 128>>>(pDevX, pDevY, pDevZ, n, functor);
+  cudaEventRecord(stop);
+  cudaEventSynchronize(stop);
+
+  // copy elision by the compiler ?
   return z;
 }

@@ -12,92 +12,102 @@
 // fixture
 #include "fixture.h"
 
+// Parameters for the benchmarks
 const size_t N = 10*1000;
-int A = 0;
-int B = 100;
-int NN = N;
+const int nRep = 10;
+const int nIter = 100;
 
-int* pA = &A;
-int* pB = &B;
-int* pN = &NN;
-
-template<class G>
-void benchGPU(
-  const std::vector<double> x,
-  G gpuFunctor
-) {  
-  std::vector<double> y = applyGpuOp1(x, gpuFunctor);
-}
-
-/*
-BENCHMARK(CpuNaturalLogarithm, Random_0100, 10, 100) {
+// ==========================================================
+//  Bencharks on the CPU (vs. CMath)
+// ==========================================================
+BENCHMARK(CpuNaturalLogarithm, Random_1000, nRep, nIter) {
   std::vector<double> x = randomFill(0, 100, N);
   std::vector<double> y = applyCpuOp1(x, CpuLog());
 }
 
-BENCHMARK(LibNaturalLogarithm, Random_0100, 10, 100) {
+BENCHMARK(LibNaturalLogarithm, Random_1000, nRep, nIter) {
   std::vector<double> x = randomFill(0, 100, N);
   std::vector<double> y = applyCpuOp1(x, LibLog());
 }
 
-BENCHMARK(GpuNaturalLogarithm, Random_0100, 10, 100) {
-  std::vector<double> x = randomFill(0, 100, N);
-  std::vector<double> y = applyGpuOp1(x, GpuLog());
-}
-
-BENCHMARK(CpuExponential, Random_100100, 10, 100) {
+BENCHMARK(CpuExponential, Random_1000, nRep, nIter) {
   std::vector<double> x = randomFill(-100, 100, N);
   std::vector<double> y = applyCpuOp1(x, CpuExp());
 }
 
-BENCHMARK(LibExponential, Random_100100, 10, 100) {
+BENCHMARK(LibExponential, Random_1000, nRep, nIter) {
   std::vector<double> x = randomFill(-100, 100, N);
   std::vector<double> y = applyCpuOp1(x, LibExp());
 }
 
-BENCHMARK(GpuExponential, Random_100100, 10, 100) {
+BENCHMARK(CpuPower, Random_1000, nRep, nIter) {
   std::vector<double> x = randomFill(-100, 100, N);
-  std::vector<double> y = applyGpuOp1(x, GpuExp());
+  std::vector<double> y = randomFill(0, 100, N);
+  std::vector<double> z = applyCpuOp2(x, y, CpuPow());
 }
 
-BENCHMARK(GpuExponential10, Random_100100, 10, 100) {
-  std::vector<double> x = randomFill(-100, 100, 10*N);
-  std::vector<double> y = applyGpuOp1(x, GpuExp());
-}
-*/
-
-/*
-BENCHMARK(GpuExponentialBench, Random_100100, 10, 100) {
+BENCHMARK(LibPower, Random_1000, nRep, nIter) {
   std::vector<double> x = randomFill(-100, 100, N);
-  std::vector<double> y = applyGpuBenchOp1(x, GpuExp());
+  std::vector<double> y = randomFill(0, 100, N);
+  std::vector<double> z = applyCpuOp2(x, y, LibPow());
 }
 
-BENCHMARK(GpuExponential10Bench, Random_100100, 10, 100) {
-  std::vector<double> x = randomFill(-100, 100, 10*N);
-  std::vector<double> y = applyGpuBenchOp1(x, GpuExp());
-}
-*/
-/*
-int* Random_0_100::pA = pA;
-int* Random_0_100::pB = pB;
-int* Random_0_100::pN = pN;
-*/
-
-BENCHMARK_F(Random_0_1000 , GpuExponentialBench, 10, 100) {
+// ==========================================================
+//  Bencharks on the GPU (vs. CUDAMath)
+// ==========================================================
+BENCHMARK_F(Random_1000 , GpuExponentialBench, nRep, nIter) {
   std::vector<double> y = applyGpuBenchOp1(
-  	pDevX, 
+  	pDevX,
   	pDevY,
   	N,
   	GpuExp()
   );
 }
 
-BENCHMARK_F(Random_0_1000, GpuExponentialBench2, 10, 100) {
+BENCHMARK_F(Random_1000, CudaExponentialBench, nRep, nIter) {
   std::vector<double> y = applyGpuBenchOp1(
   	pDevX, 
   	pDevY,
   	N,
   	CudaExp()
+  );
+}
+
+BENCHMARK_F(Random_1000 , GpuNaturalLogarithmBench, nRep, nIter) {
+  std::vector<double> y = applyGpuBenchOp1(
+  	pDevX, 
+  	pDevY,
+  	N,
+  	GpuLog()
+  );
+}
+
+BENCHMARK_F(Random_1000, CudaNaturalLogarithmBench, nRep, nIter) {
+  std::vector<double> y = applyGpuBenchOp1(
+  	pDevX, 
+  	pDevY,
+  	N,
+  	CudaLog()
+  );
+}
+
+BENCHMARK_F(Random2_1000 , GpuNaturalLogarithmBench, nRep, nIter) {
+  std::vector<double> z = applyGpuBenchOp2(
+  	pDevX, 
+  	pDevY,
+  	pDevZ,
+  	N,
+  	GpuPow()
+  );
+}
+
+BENCHMARK_F(Random2_1000, CudaNaturalLogarithmBench, nRep, nIter) {
+  std::vector<double> z = applyGpuBenchOp2(
+  	pDevX, 
+  	pDevY,
+  	pDevZ,
+  	N,
+  	CudaPow()
   );
 }
 
