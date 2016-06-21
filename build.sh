@@ -3,8 +3,8 @@
 # Environment
 echo "Loading environment"
 module load PrgEnv-gnu/15.11_cuda_7.0_gdr
-export GTEST=../../googletest/
-export HAYAI=../../hayai/
+export GTEST=../googletest/
+export HAYAI=../hayai/
 
 # Clean
 echo "Cleaning"

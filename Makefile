@@ -4,8 +4,8 @@ NV=nvcc
 CCFLAGS=-std=c++11
 NVFLAGS=-rdc=true -arch=sm_37 -dc 
 
-GTEST=../../googletest/
-HAYAI=../../hayai/
+GTEST=../googletest/
+HAYAI=../hayai/
 
 GINC=-isystem $(GTEST)/googletest/include 
 GLIB=${GTEST}/build/googlemock/gtest/libgtest.a
@@ -29,7 +29,7 @@ repro: helpers protablefct
 bench: protablefct
 	$(NV) -rdc=true -g -arch=sm_37 --std=c++11 $(HINC) benchtests.cu test_tools.o cuda_functors.o cpu_portable_math.o gpu_portable_math.o -o perfTests.out
 
-all: approx repro bench
+all: clean approx repro bench
 	.PHONY : all
 
 clean:
