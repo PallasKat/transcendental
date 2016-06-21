@@ -4,6 +4,7 @@
 echo "Loading environment"
 module load PrgEnv-gnu/15.11_cuda_7.0_gdr
 export GTEST=../../googletest/
+export HAYAI=../../hayai/
 
 # Clean
 echo "Cleaning"
@@ -22,8 +23,13 @@ g++ -std=c++11 -isystem ${GTEST}/googletest/include -c tolerance.cpp
 echo "Portable transcendental functions"
 g++ -std=c++11 -ffp-contract=off -c portable_math.cpp -o cpu_portable_math.o
 nvcc -rdc=true --fmad=false -arch=sm_37 -dc portable_math.cu -o gpu_portable_math.o
+nvcc -rdc=true -arch=sm_37 -dc cuda_functors.cu
 
 # Unit tests
-echo "Unit tests"
-nvcc -rdc=true -g -arch=sm_37 --std=c++11 -isystem ${GTEST}/googletest/include approxtests.cu ${GTEST}/build/googlemock/gtest/libgtest.a test_tools.o cpu_portable_math.o gpu_portable_math.o tolerance.o -o approxTests.out
-nvcc -rdc=true -g -arch=sm_37 --std=c++11 -isystem ${GTEST}/googletest/include bitreprotests.cu ${GTEST}/build/googlemock/gtest/libgtest.a test_tools.o cpu_portable_math.o gpu_portable_math.o tolerance.o -o reproTests.out
+#echo "Unit tests"
+#nvcc -rdc=true -g -arch=sm_37 --std=c++11 -isystem ${GTEST}/googletest/include approxtests.cu ${GTEST}/build/googlemock/gtest/libgtest.a test_tools.o cpu_portable_math.o gpu_portable_math.o tolerance.o -o approxTests.out
+#nvcc -rdc=true -g -arch=sm_37 --std=c++11 -isystem ${GTEST}/googletest/include bitreprotests.cu ${GTEST}/build/googlemock/gtest/libgtest.a test_tools.o cpu_portable_math.o gpu_portable_math.o tolerance.o -o reproTests.out
+
+# Performance tests
+echo "Performance tests"
+nvcc -rdc=true -g -arch=sm_37 --std=c++11 -I ${HAYAI}/src benchtests.cu test_tools.o cuda_functors.o cpu_portable_math.o gpu_portable_math.o -o perfTests.out

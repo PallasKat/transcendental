@@ -54,6 +54,44 @@ std::vector<double> applyGpuOp1(
   return y;
 }
 
+template<class F>
+std::vector<double> applyGpuBenchOp1(
+  //const std::vector<double>& v,
+  double* pDevX,
+  double* pDevY,
+  size_t n,
+  F functor
+) {
+  //const uint32_t n = v.size();
+
+  cudaEvent_t start, stop;
+  cudaEventCreate(&start);
+  cudaEventCreate(&stop);
+
+  //double* pDevX = NULL;
+  //sendToDevice(pDevX, v.data(), n);
+  //std::vector<double> u = valueFill(0.0, n);
+  //printVector(u);
+  //sendToDevice(pDevX, u.data(), n);
+
+  //double* pDevY = NULL;
+  std::vector<double> y(n);
+  gpuErrchk(cudaMalloc((void**) &pDevY, n*sizeof(double)));
+
+  // applying operations and copying the result back to the memory
+  cudaEventRecord(start);
+  GpuOperation1<<<128, 128>>>(pDevX, pDevY, n, functor);
+  cudaEventRecord(stop);
+  cudaEventSynchronize(stop);
+
+  // freeing memory on the device
+  //gpuErrchk(cudaFree(pDevX));
+  //gpuErrchk(cudaFree(pDevY));
+
+  // copy elision by the compiler ?
+  return y;
+}
+
 // -----------------------------------------------------------------------------
 // Functor for the function of the kind z = f(x, y), (Double x Double) -> Double
 // -----------------------------------------------------------------------------
