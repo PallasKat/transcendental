@@ -197,4 +197,4 @@ Currently some accuracy tests versus the `cmath` (the reference) are failing. Th
 
 ## Contribution guidelines
 
-The code, tests and benchmarks are written by PallasKat (Christophe Charpilloz, [MeteoSchweiz](http://www.meteoswiss.admin.ch/home.html)) and the mathematical implementations are inspired by the one proposed by [Nvidia Corporation](http://www.nvidia.com).
+The code, tests and benchmarks are written by PallasKat (Christophe Charpilloz, [MeteoSchweiz](http://www.meteoswiss.admin.ch/home.html)) and the mathematical implementations are inspired by the ones proposed by [Nvidia Corporation](http://www.nvidia.com).
