@@ -1,4 +1,5 @@
 build/
+trash/
 *.txt
 *.out
 *.o
