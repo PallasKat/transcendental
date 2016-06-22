@@ -61,3 +61,6 @@ fname = "fdata.csv"
 fs = readFunctors(fname)
 for f in fs:
   c, g, l = cfunctors(f)
+  print c
+  print g
+  print l
