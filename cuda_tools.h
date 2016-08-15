@@ -34,3 +34,9 @@ void sendToDevice(double*& ptr, const double* data, const int n) {
   gpuErrchk(cudaMalloc((void**) &ptr, n*sizeof(double)));
   gpuErrchk(cudaMemcpy(ptr, data, n*sizeof(double), cudaMemcpyHostToDevice));
 }
+
+void sendToDeviceFloat(float*& ptr, const float* data, const int n) {
+  gpuErrchk(cudaMalloc((void**) &ptr, n*sizeof(float)));
+  gpuErrchk(cudaMemcpy(ptr, data, n*sizeof(float), cudaMemcpyHostToDevice));
+}
+
