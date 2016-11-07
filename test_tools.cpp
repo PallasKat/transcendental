@@ -23,7 +23,7 @@ void printVector(const std::vector<double>& v) {
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-// Random real values
+// DOUBLES - Random real values
 // -----------------------------------------------------------------------------
 
 // return a random double in [a,b)
@@ -60,6 +60,44 @@ std::vector<double> randomEvenFill(int a, int b, size_t n) {
 }
 
 // -----------------------------------------------------------------------------
+//  FLOATING POINTS - Random real values
+//  -----------------------------------------------------------------------------
+
+//FLOATING POINTS -  return a random double in [a,b)
+inline float randomDoubleFloat(int a, int b) {
+  return (b - a)*((float) rand()/(float) RAND_MAX) + a;
+}
+
+//FLOATING POINTS -  Fill the array ary of size n with random values in [a,b)
+std::vector<float> randomFillFloat(int a, int b, size_t n) {
+  std::vector<float> y(n);
+  for (size_t i = 0; i < n; i++) {
+    y[i] = randomDoubleFloat(a, b);
+  }
+  return y;
+}
+
+//FLOATING POINTS -  Fill the array ary of size n random values in [0,1)
+std::vector<float> randomFillFloat(size_t n) {
+  return randomFillFloat(0, 1, n);
+}
+
+//FLOATING POINTS -  Fill the array ary of size n with random values x in [a,b)
+// whose truncated value is even
+std::vector<float> randomEvenFillFloat(int a, int b, size_t n) {
+  std::vector<float> y(n);
+  for (size_t i = 0; i < n; i++) {
+    float t = randomDoubleFloat(a, b);
+    while (((int) trunc(t)) % 2 != 0) {
+      t = randomDoubleFloat(a, b);
+    }
+    y[i] = t;
+  }
+  return y;
+}
+
+
+// -----------------------------------------------------------------------------
 // Random integer values (as double)
 // -----------------------------------------------------------------------------
 
@@ -74,6 +112,25 @@ std::vector<double> randomIntFill(int a, int b, size_t n) {
   std::vector<double> y(n);
   for (size_t i = 0; i < n; i++) {
     y[i] = randomInteger(a, b);
+  }
+  return y;
+}
+
+// -----------------------------------------------------------------------------
+// Random integer values (as FLOAT)
+// -----------------------------------------------------------------------------
+
+// return a random integer (as float) in [a,b]
+inline float randomIntegerFloat(int a, int b) {
+  int x = a + (rand() % (int)(b - a + 1));
+  return (float) x;
+}
+
+// Fill the array ary of size n with random integer values in [a,b)
+std::vector<float> randomIntFillFloat(int a, int b, size_t n) {
+  std::vector<float> y(n);
+  for (size_t i = 0; i < n; i++) {
+    y[i] = randomIntegerFloat(a, b);
   }
   return y;
 }
@@ -95,6 +152,25 @@ std::vector<double> valueFill(double d, size_t n) {
 std::vector<double> zeroFill(size_t n) {
   return valueFill(0, n);
 }
+
+// -----------------------------------------------------------------------------
+// Fixed values FLOAT
+// -----------------------------------------------------------------------------
+
+// Fill the array ary of size n with a given value
+std::vector<float> valueFillFloat(float d, size_t n) {
+  std::vector<float> ary(n);
+  for (size_t i = 0; i < n; i++) {
+    ary[i] = d;
+  }
+  return ary;
+}
+
+// Fill the array ary of size n with a given value
+std::vector<float> zeroFillFloat(size_t n) {
+  return valueFillFloat(0, n);
+}
+
 
 // =============================================================================
 // ERROR HELPERS:

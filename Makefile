@@ -8,7 +8,7 @@ GTEST=../googletest/
 HAYAI=../hayai/
 
 GINC=-isystem $(GTEST)/googletest/include 
-GLIB=${GTEST}/build/googlemock/gtest/libgtest.a
+GLIB=${GTEST}/googlemock/gtest/libgtest.a
 HINC=-I $(HAYAI)/src
 
 protablefct:

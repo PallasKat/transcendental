@@ -556,6 +556,36 @@ TEST(PowGPUTest, anyBaseAnyIntExponentValues) {
 }
 
 // =============================================================================
+// TESTING THE SIN FUNCTIONS
+// =============================================================================
+
+// -----------------
+// CPU
+// -----------------
+void testCpuSinTolOn(
+  const std::vector<double> x,
+  const double tol
+) {
+  testCpuTolOn(x, tol, CpuSin(), LibSin());
+  /*
+  std::vector<double> crClimValues = applyCpuOp1(x, CpuSin());
+  std::vector<double> expectedValues = applyCpuOp1(x, LibSin());
+  verifyTol(expectedValues, crClimValues, x, TOL);
+  */
+}
+
+void testCpuSinEqOn(const std::vector<double> x) {
+  std::vector<double> crClimValues = applyCpuOp1(x, CpuSin());
+  std::vector<double> expectedValues = applyCpuOp1(x, LibSin());
+  verifyEq(expectedValues, crClimValues, x);
+}
+
+TEST(SinCPUTest, PositiveValues) {
+  std::vector<double> x = randomFill(0, 100, N);
+  testCpuSinTolOn(x, TOL);
+}
+
+// =============================================================================
 // ENTRY POINT
 // =============================================================================
 int main(int argc, char **argv) {
