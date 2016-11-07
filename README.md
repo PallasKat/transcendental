@@ -100,7 +100,8 @@ srun -n 1 -p debug --gres=gpu:1 -t 00:10:00 ./approxTests.out
 ``` 
 and this produces an output of the form:
 ```
-[==========] Running 42 tests from 7 test cases.
+> srun -n 1 -p debug --gres=gpu:1 -t 00:10:00 ./approxTests.out
+[==========] Running 165 tests from 43 test cases.
 [----------] Global test environment set-up.
 [----------] 2 tests from LogCPUTest
 [ RUN      ] LogCPUTest.PositiveValues
@@ -108,12 +109,19 @@ and this produces an output of the form:
 [ RUN      ] LogCPUTest.NegativeValues
 [       OK ] LogCPUTest.NegativeValues (19 ms)
 [----------] 2 tests from LogCPUTest (22 ms total)
-...
-[  FAILED  ] PowGPUTest.zeroToOneBaseNegInfExponentValues
 
-14 FAILED TESTS
-srun: error: eschacn-0010: task 0: Exited with exit code 1
-srun: Terminating job step 3703527.0
+[----------] 2 tests from LogErrCPUTest
+[ RUN      ] LogErrCPUTest.Zero
+[       OK ] LogErrCPUTest.Zero (0 ms)
+
+...
+[       OK ] AtanhGPUTest.Infinity (1 ms)
+[----------] 5 tests from AtanhGPUTest (45 ms total)
+
+[----------] Global test environment tear-down
+[==========] 165 tests from 43 test cases ran. (1106 ms total)
+[  PASSED  ] 165 tests.
+
 ```
 where there is still work to do for the accuracy of the functions in some (14/42, ~33%) test cases.
 
@@ -121,28 +129,22 @@ where there is still work to do for the accuracy of the functions in some (14/42
 This is an example of the reproducibility tests' execution on the CSCS machine Kesch:
 ```
 > srun -n 1 -p debug --gres=gpu:1 -t 00:10:00 ./reproTests.out 
-[==========] Running 42 tests from 8 test cases.
+[==========] Running 139 tests from 45 test cases.
 [----------] Global test environment set-up.
 [----------] 1 test from LogTest
 [ RUN      ] LogTest.PositiveValues
-[       OK ] LogTest.PositiveValues (435 ms)
-[----------] 1 test from LogTest (435 ms total)
+[       OK ] LogTest.PositiveValues (469 ms)
+[----------] 1 test from LogTest (469 ms total)
 
 [----------] 1 test from LogCPUTest
 [ RUN      ] LogCPUTest.NegativeValues
-[       OK ] LogCPUTest.NegativeValues (21 ms)
-[----------] 1 test from LogCPUTest (22 ms total)
-
-[----------] 2 tests from LogErrCPUTest
-[ RUN      ] LogErrCPUTest.Zero
-[       OK ] LogErrCPUTest.Zero (1 ms)
-[ RUN      ] LogErrCPUTest.Infinity
-[       OK ] LogErrCPUTest.Infinity (1 ms)
-[----------] 2 tests from LogErrCPUTest (2 ms total)
 ...
+[       OK ] AtanhGPUTest.Infinity (1 ms)
+[----------] 4 tests from AtanhGPUTest (46 ms total)
+
 [----------] Global test environment tear-down
-[==========] 42 tests from 8 test cases ran. (698 ms total)
-[  PASSED  ] 42 tests.
+[==========] 139 tests from 45 test cases ran. (1217 ms total)
+[  PASSED  ] 139 tests.
 ```
 which shows that all reproducibility tests pass.
 
@@ -150,51 +152,39 @@ which shows that all reproducibility tests pass.
 This is an example of the benchmarks' execution on the CSCS machine Kesch:
 ```
 > srun -n 1 -p debug --gres=gpu:1 -t 00:10:00 ./perfTests.out 
-[==========] Running 12 benchmarks.
+[==========] Running 60 benchmarks.
 [ RUN      ] CpuNaturalLogarithm.Random_1000 (10 runs, 100 iterations per run)
-[     DONE ] CpuNaturalLogarithm.Random_1000 (1277.780620 ms)
-[   RUNS   ]        Average time: 127778.062 us
-                         Fastest: 126947.762 us (-830.300 us / -0.650 %)
-                         Slowest: 128973.762 us (+1195.700 us / +0.936 %)
+[     DONE ] CpuNaturalLogarithm.Random_1000 (1300.437560 ms)
+[   RUNS   ]        Average time: 130043.756 us
+                         Fastest: 128206.756 us (-1837.000 us / -1.413 %)
+                         Slowest: 135606.756 us (+5563.000 us / +4.278 %)
                                   
-             Average performance: 7.82607 runs/s
-                Best performance: 7.87726 runs/s (+0.05119 runs/s / +0.65405 %)
-               Worst performance: 7.75352 runs/s (-0.07255 runs/s / -0.92709 %)
-[ITERATIONS]        Average time: 1277.781 us
-                         Fastest: 1269.478 us (-8.303 us / -0.650 %)
-                         Slowest: 1289.738 us (+11.957 us / +0.936 %)
-                                  
-             Average performance: 782.60695 iterations/s
-                Best performance: 787.72558 iterations/s (+5.11863 iterations/s / +0.65405 %)
-               Worst performance: 775.35150 iterations/s (-7.25545 iterations/s / -0.92709 %)
-[ RUN      ] LibNaturalLogarithm.Random_1000 (10 runs, 100 iterations per run)
-[     DONE ] LibNaturalLogarithm.Random_1000 (659.169620 ms)
+             Average performance: 7.68972 runs/s
+                Best performance: 7.79990 runs/s (+0.11018 runs/s / +1.43284 %)
+               Worst performance: 7.37426 runs/s (-0.31546 runs/s / -4.10230 %)
+[ITERATIONS]        Average time: 1300.438 us
+
 ...
-[==========] Ran 12 benchmarks.
+[   RUNS   ]        Average time: 9482.856 us
+                         Fastest: 8709.756 us (-773.100 us / -8.153 %)
+                         Slowest: 10689.756 us (+1206.900 us / +12.727 %)
+                                  
+             Average performance: 105.45346 runs/s
+                Best performance: 114.81378 runs/s (+9.36032 runs/s / +8.87625 %)
+               Worst performance: 93.54750 runs/s (-11.90596 runs/s / -11.29025 %)
+[ITERATIONS]        Average time: 94.829 us
+                         Fastest: 87.098 us (-7.731 us / -8.153 %)
+                         Slowest: 106.898 us (+12.069 us / +12.727 %)
+                                  
+             Average performance: 10545.34625 iterations/s
+                Best performance: 11481.37789 iterations/s (+936.03164 iterations/s / +8.87625 %)
+               Worst performance: 9354.75047 iterations/s (-1190.59578 iterations/s / -11.29025 %)
+[==========] Ran 60 benchmarks.
 ```
 
 ## Tools
 Tools are provided in the `tools/` directory of the project. Please read the corresponding `README.md` located in the directory.
 
-## Issues
-Currently some accuracy tests versus the `cmath` (the reference) are failing. Those are listed below:
-```
-[  FAILED  ] ExpCPUTest.PositiveValues
-[  FAILED  ] ExpCPUTest.NegativeValues
-[  FAILED  ] ExpCPUTest.Zero
-[  FAILED  ] ExpCPUTest.Infinity
-[  FAILED  ] PowCPUTest.zeroBaseZeroInfExponentValues
-[  FAILED  ] PowCPUTest.posInfBaseZeroInfExponentValues
-[  FAILED  ] PowCPUTest.negInfBaseZeroInfExponentValues
-[  FAILED  ] PowCPUTest.zeroToOneBasePosInfExponentValues
-[  FAILED  ] PowCPUTest.zeroToOneBaseNegInfExponentValues
-[  FAILED  ] PowGPUTest.zeroBaseZeroInfExponentValues
-[  FAILED  ] PowGPUTest.posInfBaseZeroInfExponentValues
-[  FAILED  ] PowGPUTest.negInfBaseZeroInfExponentValues
-[  FAILED  ] PowGPUTest.zeroToOneBasePosInfExponentValues
-[  FAILED  ] PowGPUTest.zeroToOneBaseNegInfExponentValues
-```
-
 ## Contribution guidelines
 
-The code, tests and benchmarks are written by PallasKat (Christophe Charpilloz, [MeteoSchweiz](http://www.meteoswiss.admin.ch/home.html)) and the mathematical implementations are inspired by the ones proposed by [Nvidia Corporation](http://www.nvidia.com).
+The code, tests and benchmarks are written and maintained by PallasKat (Christophe Charpilloz, [MeteoSwiss](http://www.meteoswiss.admin.ch/home.html)) and the mathematical implementations are inspired by the ones proposed by [Nvidia Corporation](http://www.nvidia.com). The implementation transcendental functions is a contribution from [andyspiros](https://github.com/andyspiros) (Andrea Arteaga, [ETHZ](https://www.ethz.ch/) and MeteoSwiss) and [montythind](https://github.com/montythind) (Montek Thind, [NOAA](www.noaa.gov/)) and the reamining tests from montythind.
