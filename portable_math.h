@@ -1393,6 +1393,51 @@ double tanh(double x){
 // =============================================================================
 
 __ACC__
+double __internal_atanh_kernel (double a_1, double a_2)
+{
+    double a, a2, t;
+
+    a = a_1 + a_2;
+    a2 = a * a;
+    t = 7.597322383488143E-002/65536.0;
+    t = __BITREPFMA (t, a2, 6.457518383364042E-002/16384.0);          
+    t = __BITREPFMA (t, a2, 7.705685707267146E-002/4096.0);
+    t = __BITREPFMA (t, a2, 9.090417561104036E-002/1024.0);
+    t = __BITREPFMA (t, a2, 1.111112158368149E-001/256.0);
+    t = __BITREPFMA (t, a2, 1.428571416261528E-001/64.0);
+    t = __BITREPFMA (t, a2, 2.000000000069858E-001/16.0);
+    t = __BITREPFMA (t, a2, 3.333333333333198E-001/4.0);
+    t = t * a2;
+    t = __BITREPFMA (t, a, a_2);
+    t = t + a_1;
+    return t;
+}
+
+__ACC__
+double log1p(double x)
+{
+    double t;
+    union {
+        int32_t i[2];
+        double d;
+    } xx;
+    xx.d = x;
+    
+    int i = xx.i[1];
+    if (((unsigned)i < (unsigned)0x3fe55555) || ((int)i < (int)0xbfd99999)) {
+        /* Compute log2(x+1) = 2*atanh(x/(x+2)) */
+        t = x + 2.0;
+        t = x / t;
+        t = -x * t;
+        t = __internal_atanh_kernel(x, t);
+    } else {
+        t = log (x + 1.);
+    }
+    return t;
+}
+
+
+__ACC__
 double _asinh(double x)
 {
   double fx, t;
@@ -1408,7 +1453,8 @@ double _asinh(double x)
     t = 6.9314718055994529e-1 + log(fx);
   } else {
     t = fx * fx;
-    t = log1p (fx + t / (1.0 + std::sqrt(1.0 + t)));
+    //t = 1.0;
+    t = log1p(fx + t / (1.0 + std::sqrt(1.0 + t)));
   }
   return __internal_copysign_pos(t, x);  
 }

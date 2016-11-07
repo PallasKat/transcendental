@@ -68,21 +68,21 @@ class CudaAtan {
 class CudaSinh {
   public:
     __device__ double operator() (double x) const {
-      return tan(x);
+      return sinh(x);
     }
 };
 
 class CudaCosh {
   public:
     __device__ double operator() (double x) const {
-      return tan(x);
+      return cosh(x);
     }
 };
 
 class CudaTanh {
   public:
     __device__ double operator() (double x) const {
-      return tan(x);
+      return tanh(x);
     }
 };
 
@@ -177,21 +177,21 @@ class CudaAtanFloat {
 class CudaSinhFloat {
   public:
     __device__ float operator() (float x) const {
-      return tan(x);
+      return sinh(x);
     }
 };
 
 class CudaCoshFloat {
   public:
     __device__ float operator() (float x) const {
-      return tan(x);
+      return cosh(x);
     }
 };
 
 class CudaTanhFloat {
   public:
     __device__ float operator() (float x) const {
-      return tan(x);
+      return tanh(x);
     }
 };
 

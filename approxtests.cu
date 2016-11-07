@@ -2691,6 +2691,7 @@ TEST(AtanhGPUTestFloat, Infinity) {
 }
 
 */
+
 // ENTRY POINT
 // =============================================================================
 int main(int argc, char **argv) {

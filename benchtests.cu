@@ -167,10 +167,16 @@ BENCHMARK(CpuAtanh, Random_1000, nRep, nIter) {
   std::vector<double> y = applyCpuOp1(x, CpuAtanh());
 }
 
+BENCHMARK(LibAtanh, Random_1000, nRep, nIter) {
+  std::vector<double> x = randomFill(0, 100, N);
+  std::vector<double> y = applyCpuOp1(x, LibAtanh());
+}
+
 // ==========================================================
 //  Bencharks on the CPU (vs. CMath) FLOATING POINTS
 // ==========================================================
 
+/*
 BENCHMARK(CpuNaturalLogarithmFloat, Random_1000, nRep, nIter) {
   std::vector<float> x = randomFillFloat(0, 100, N);
   std::vector<float> y = applyCpuOp1Float(x, CpuLog());
@@ -318,7 +324,9 @@ BENCHMARK(CpuAtanhFloat, Random_1000, nRep, nIter) {
   std::vector<float> x = randomFillFloat(0, 100, N);
   std::vector<float> y = applyCpuOp1Float(x, CpuAtanh());
 }
+*/
 
+// ==========================================================
 //  Bencharks on the GPU (vs. CUDAMath)
 // ==========================================================
 BENCHMARK_F(Random_1000 , GpuExponentialBench, nRep, nIter) {
@@ -357,7 +365,7 @@ BENCHMARK_F(Random_1000, CudaNaturalLogarithmBench, nRep, nIter) {
   );
 }
 
-BENCHMARK_F(Random2_1000 , GpuNaturalLogarithmBench, nRep, nIter) {
+BENCHMARK_F(Random2_1000 , GpuPowerBench, nRep, nIter) {
   std::vector<double> z = applyGpuBenchOp2(
   	pDevX, 
   	pDevY,
@@ -367,7 +375,7 @@ BENCHMARK_F(Random2_1000 , GpuNaturalLogarithmBench, nRep, nIter) {
   );
 }
 
-BENCHMARK_F(Random2_1000, CudaNaturalLogarithmBench, nRep, nIter) {
+BENCHMARK_F(Random2_1000, CudaPowerBench, nRep, nIter) {
   std::vector<double> z = applyGpuBenchOp2(
   	pDevX, 
   	pDevY,
@@ -595,6 +603,7 @@ BENCHMARK_F(Random_1000, CudaAtanhBench, nRep, nIter) {
 //  Bencharks on the GPU (vs. CUDAMath) FLOATING POINTS
 // ==========================================================
 
+/*
 BENCHMARK_F(Random_1000Float , GpuNaturalLogarithmBenchFloat, nRep, nIter) {
   std::vector<float> y = applyGpuBenchOp1Float(
         pDevX,
@@ -630,6 +639,8 @@ BENCHMARK_F(Random_1000Float, CudaExponentialBenchFloat, nRep, nIter) {
         CudaExp()
   );
 }
+*/
+
 /*
 BENCHMARK_F(Random2_1000Float, GpuNaturalLogarithmBenchFloat, nRep, nIter) {
   std::vector<float> z = applyGpuBenchOp2Float(
@@ -652,6 +663,7 @@ BENCHMARK_F(Random2_1000Float, CudaNaturalLogarithmBenchFloat, nRep, nIter) {
 }
 */
 
+/*
 BENCHMARK_F(Random_1000Float, GpuSinBenchFloat, nRep, nIter) {
   std::vector<float> y = applyGpuBenchOp1Float(
         pDevX,
@@ -865,7 +877,7 @@ BENCHMARK_F(Random_1000Float, CudaAtanhBenchFloat, nRep, nIter) {
         CudaAtanh()
   );
 }
-
+*/
 
 int main() {
   hayai::ConsoleOutputter consoleOutputter;

@@ -290,7 +290,8 @@ class GpuAsin{
   public:
    __device__ double operator()(double x) const
    {
-     return gm::acos(x);
+     return gm::asin(x);
+     //return gm::acos(x);
      //retun friendly_acos(x);
    }
 };
