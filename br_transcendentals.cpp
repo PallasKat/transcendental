@@ -581,7 +581,7 @@ double tanh(double x)
 
 
 /********************************
- * INVERSE HIPERBOLIC FUNCTIONS *
+ * INVERSE HYPERBOLIC FUNCTIONS *
  ********************************/
 
 double __internal_atanh_kernel (double a_1, double a_2)
