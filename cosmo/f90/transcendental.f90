@@ -15,103 +15,85 @@ module transcendental
     module procedure exp_scalar !, exp_vect, exp_matrix
   end interface EXP
 
-  interface
-    elemental real(c_double) function C_EXP(x) result(y) bind(C, name="br_exp")
-      !$acc routine seq
-      use iso_c_binding
-      implicit none
-      real(c_double), value :: x
-    end function C_EXP
+  !interface
+  !  elemental real(c_double) function C_EXP(x) result(y) bind(C, name="br_exp")
+  !    !$acc routine seq
+  !    use iso_c_binding
+  !    implicit none
+  !    real(c_double), value :: x
+  !  end function C_EXP
 
-    elemental real(c_double) function C_LOG(x) result(y) bind(C, name="br_log")
-      !$acc routine seq
-      use iso_c_binding
-      implicit none
-      real(c_double), value :: x
-    end function C_LOG
-  end interface
+  !  elemental real(c_double) function C_LOG(x) result(y) bind(C, name="br_log")
+  !    !$acc routine seq
+  !    use iso_c_binding
+  !    implicit none
+  !    real(c_double), value :: x
+  !  end function C_LOG
+  !end interface
 
   interface LOG10
-    module procedure MCH_LOG10
+    module procedure log10_scalar ! MCH_LOG10
   end interface LOG10
 
 contains
-  ! ===========================================================
-  ! LOGARITHM IN BASE 10: COMPUTED AS LOG X DIVIDED BY LN
-  ! OF 10
-  ! ===========================================================
-  elemental real(kind=real64) function MCH_LOG10(x) result(y)
-    !$acc routine seq
-    real(kind=real64), intent(in) :: x
-    !real(kind=real64), parameter :: LN_10 = 2.30258509299404568402
-    !y = C_LOG(x)/LN_10
-    real(kind=real64), parameter :: INV_LN_10 = 0.434294481903251827651129
-    y = C_LOG(x)*INV_LN_10
-  end function MCH_LOG10
 
-  ! ===========================================================
-  ! SCALAR FORM OF THE LOG FUNCTION
-  ! ===========================================================  
-  elemental real(kind=real64) function log_scalar(x) result(y)
-    !$acc routine seq
-    real(kind=real64), intent(in) :: x
+  elemental function log_scalar(x) result(y)
+    use, intrinsic :: iso_c_binding
+    implicit none
+
+    real(c_double), intent(in) :: x    
+    real(c_double) :: br_log
+    real(kind=real64) :: y
+
+    interface
+      pure function C_LOG(x) bind(C, name = 'br_log')
+        import
+        real(c_double), value, intent(in) :: x
+        real(c_double) :: C_LOG
+      end function
+    end interface
+
     y = C_LOG(x)
-  end function log_scalar
+  end function
 
-  ! ===========================================================
-  ! VECTOR FORM OF THE LOG FUNCTION
-  ! ===========================================================
-  pure function log_vect(x) result(y)
-    !$acc routine seq
-    real(kind=real64), dimension(:), intent(in) :: x
+  elemental function exp_scalar(x) result(y)
+    use, intrinsic :: iso_c_binding
+    implicit none
 
-    integer :: i
-    real(kind=real64) :: y(size(x))
+    real(c_double), intent(in) :: x
+    real(c_double) :: br_exp
+    real(kind=real64) :: y
 
-    do i = 1, size(x)
-      y(i) = C_LOG(x(i))
-    end do
-  end function log_vect
-  
-  ! ===========================================================
-  ! SCALAR FORM OF THE EXP FUNCTION
-  ! ===========================================================
-  pure real(kind=real64) function exp_scalar(x) result(y)
-    !$acc routine seq
-    real(kind=real64), intent(in) :: x
+    interface
+      pure function C_EXP(x) bind(C, name = 'br_exp')
+        import
+        real(c_double), value, intent(in) :: x
+        real(c_double) :: C_EXP
+      end function
+    end interface
+    
     y = C_EXP(x)
-  end function exp_scalar
+  end function
 
-  ! ===========================================================
-  ! VECTOR FORM OF THE EXP FUNCTION
-  ! ===========================================================
-  pure function exp_vect(x) result(y)
-    !$acc routine seq
-    real(kind=real64), dimension(:), intent(in) :: x
+  elemental function log10_scalar(x) result(y)
+    use, intrinsic :: iso_c_binding
+    implicit none
 
-    integer :: i
-    real(kind=real64) :: y(size(x))
+    real(kind=real64), parameter :: INV_LN_10 = 0.434294481903251827651129
+    real(c_double), intent(in) :: x
+    real(c_double) :: br_exp
+    real(kind=real64) :: y
 
-    do i = 1, size(x)
-      y(i) = C_EXP(x(i))
-    end do
-  end function exp_vect
-
-  ! ===========================================================
-  ! 2D MATRIX FORM OF THE EXP FUNCTION
-  ! ===========================================================
-  pure function exp_matrix(x) result(y)
-    !$acc routine seq
-    real(kind=real64), dimension(:,:), intent(in) :: x
-
-    integer :: i, j
-    real(kind=real64) :: y(size(x, 1), size(x, 2))
-
-    do j = 1, size(x, 2)
-      do i = 1, size(x, 1)
-        y(i, j) = C_EXP(x(i, j))
-      end do
-    end do
-  end function exp_matrix
+    interface
+      pure function C_EXP(x) bind(C, name = 'br_exp')
+        import
+        real(c_double), value, intent(in) :: x
+        real(c_double) :: C_EXP
+      end function
+    end interface
+    
+    y = C_EXP(x)*INV_LN_10
+  end function
 
 end module transcendental
+
