@@ -8,22 +8,22 @@ module transcendental
   ! - LOG
   ! -------------------------------------------------------------------------
   interface LOG
-    module procedure log_scalar !, log_vect
+    module procedure log_scalar, log_vect
   end interface LOG
   
   interface EXP
-    module procedure exp_scalar !, exp_vect, exp_matrix
+    module procedure exp_scalar, exp_vect, exp_matrix
   end interface EXP
 
   interface
-    elemental real(c_double) function C_EXP(x) result(y) bind(C, name="br_exp")
+    pure real(c_double) function C_EXP(x) result(y) bind(C, name="br_exp")
       !$acc routine seq
       use iso_c_binding
       implicit none
       real(c_double), value :: x
     end function C_EXP
 
-    elemental real(c_double) function C_LOG(x) result(y) bind(C, name="br_log")
+    pure real(c_double) function C_LOG(x) result(y) bind(C, name="br_log")
       !$acc routine seq
       use iso_c_binding
       implicit none
@@ -40,19 +40,17 @@ contains
   ! LOGARITHM IN BASE 10: COMPUTED AS LOG X DIVIDED BY LN
   ! OF 10
   ! ===========================================================
-  elemental real(kind=real64) function MCH_LOG10(x) result(y)
+  pure real(kind=real64) function MCH_LOG10(x) result(y)
     !$acc routine seq
     real(kind=real64), intent(in) :: x
-    !real(kind=real64), parameter :: LN_10 = 2.30258509299404568402
-    !y = C_LOG(x)/LN_10
-    real(kind=real64), parameter :: INV_LN_10 = 0.434294481903251827651129
-    y = C_LOG(x)*INV_LN_10
+    real(kind=real64), parameter :: LN_10 = 2.30258509299404568402
+    y = C_LOG(x)/LN_10
   end function MCH_LOG10
 
   ! ===========================================================
   ! SCALAR FORM OF THE LOG FUNCTION
   ! ===========================================================  
-  elemental real(kind=real64) function log_scalar(x) result(y)
+  pure real(kind=real64) function log_scalar(x) result(y)
     !$acc routine seq
     real(kind=real64), intent(in) :: x
     y = C_LOG(x)

@@ -3,13 +3,13 @@ module mchpow
   implicit none
   
   interface POW
-    module procedure pow_scalar_ff, pow_scalar_fi, pow_scalar_if, pow_scalar_ii !, &
-                     !pow_vect_ff, pow_matrix_ff, &
-                     !pow_3dmatrix_ff
+    module procedure pow_scalar_ff, pow_scalar_fi, pow_scalar_if, pow_scalar_ii, &
+                     pow_vect_ff, pow_matrix_ff, &
+                     pow_3dmatrix_ff
   end interface POW
   
   interface
-    elemental real(c_double) function C_POW(x, y) result(z) bind(C, name="br_pow")
+    pure real(c_double) function C_POW(x, y) result(z) bind(C, name="br_pow")
       !$acc routine seq
       use iso_c_binding
       implicit none
@@ -21,21 +21,20 @@ contains
   ! ============================================================================
   ! SCALAR FORM OF THE FUNCTION
   ! ============================================================================
-  elemental real(kind=real64) function pow_scalar_ff(x, y) result(z)
+  pure real(kind=real64) function pow_scalar_ff(x, y) result(z)
     !$acc routine seq
     real(kind=real64), intent(in) :: x, y
     z = C_POW(x, y)
   end function pow_scalar_ff
   
-  elemental real(kind=real64) function pow_scalar_fi(x, y) result(z)
+  pure real(kind=real64) function pow_scalar_fi(x, y) result(z)
     !$acc routine seq
     real(kind=real64), intent(in) :: x
     integer(kind=int32), intent(in) :: y
-    !z = x**y ! if y < 0 => 1.0/(x^y)
-    z = C_POW(r, y)
+    z = x**y ! if y < 0 => 1.0/(x^y)
   end function pow_scalar_fi
   
-  elemental real(kind=real64) function pow_scalar_if(x, y) result(z)
+  pure real(kind=real64) function pow_scalar_if(x, y) result(z)
     !$acc routine seq
     integer(kind=int32), intent(in) :: x
     real(kind=real64), intent(in) :: y
@@ -44,7 +43,7 @@ contains
     z = C_POW(r, y)
   end function pow_scalar_if
   
-  elemental integer(kind=int32) function pow_scalar_ii(x, y) result(z)
+  pure integer(kind=int32) function pow_scalar_ii(x, y) result(z)
     !$acc routine seq
     integer(kind=int32), intent(in) :: x
     integer(kind=int32), intent(in) :: y
