@@ -3,6 +3,7 @@ extern "C" double br_pow(const double x, const double y);
 extern "C" double br_log(const double x);
 extern "C" double br_exp(const double x);
 
+extern "C" double br_cosh(const double x);
 extern "C" double br_sinh(const double x);
 extern "C" double br_tanh(const double x);
 
